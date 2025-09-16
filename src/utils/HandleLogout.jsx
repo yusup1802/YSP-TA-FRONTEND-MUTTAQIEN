@@ -17,7 +17,7 @@ const HandleLogout = () => {
   };
 
   return (
-    <button onClick={handleLogout} className="btn btn-error mt-2.5">
+    <button onClick={handleLogout} className="btn btn-error text-white">
       Logout
     </button>
 

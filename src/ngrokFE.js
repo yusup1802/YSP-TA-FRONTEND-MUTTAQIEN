@@ -44,8 +44,8 @@ async function updateEnv() {
     try {
       let data = await fs.readFile(envPath, "utf8");
       const updatedData = data
-        .replace(/VITE_FRONTEND=.*/, 'VITE_FRONTEND_NGROK=http://localhost:5173')
-        .replace(/VITE_BACKEND=.*/, 'VITE_BACKEND_NGROK=http://localhost:3000');
+        .replace(/VITE_FRONTEND=.*/, 'VITE_FRONTEND=http://localhost:5173')
+        .replace(/VITE_BACKEND=.*/, 'VITE_BACKEND=http://localhost:3000');
       await fs.writeFile(envPath, updatedData, "utf8");
       console.log(`Ngrok gagal, file .env diubah menjadi:\n\nFrontend: http://localhost:5173\nBackend: http://localhost:3000\n\n`);
     } catch (fileError) {

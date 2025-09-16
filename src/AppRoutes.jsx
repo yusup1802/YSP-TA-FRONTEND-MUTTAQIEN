@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router';
 import Loginpage from './pages/Loginpage'
 import ProtectedRoute from './middleware/ProtectedRoute';
-import GuruProfilePage from './pages/guruPage/GuruProfilePage';
+import GuruPage from './pages/guruPage/GuruPage';
 import AbsensiMuridPage from './pages/guruPage/AbsensiMuridPage';
 import MuridPages from './pages/muridPage/MuridPages';
 import AdminprofilePage from './pages/adminPage/AdminprofilePage'
@@ -34,7 +34,7 @@ const AppRoutes = () => {
         path="/guru"
         element={
           <ProtectedRoute allowedRoles={["GURU"]}>
-            <GuruProfilePage />
+            <GuruPage />
           </ProtectedRoute>
         }
       />

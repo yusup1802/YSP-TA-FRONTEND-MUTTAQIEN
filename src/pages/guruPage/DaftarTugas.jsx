@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -25,21 +25,12 @@ const DaftarTugas = () => {
 
   };
   return (
-    <div>
-      {daftarTugas?.guruId ? (
-        <p className="text-center mt-4">Guru ID: {daftarTugas.guruId}</p>
-      ) : null}
-      {daftarTugas?.[0]?.guru?.name && (
-        <p className="text-lg font-semibold text-center">
-          Guru: {daftarTugas[0].guru.name}
-        </p>
-      )}
-
+    <div className='mt-4'>
       {
         isPending ? (
           <div className='flex text-center grow min-h-screen justify-center items-center'>Loading...</div>
         ) : error ? (
-          <div className="flex text-center grow min-h-screen justify-center items-center text-red-500">
+          <div className="flex text-center grow min-h-screen justify-center items-center">
             {error?.response?.data?.message || "Terjadi kesalahan saat memuat data."}
           </div>) :
           <FullCalendar
@@ -64,7 +55,8 @@ const DaftarTugas = () => {
             <div className="modal-box">
               {/* content */}
               <h2 className="text-xl font-bold mb-2 text-center">{modalEvent.title}</h2>
-              <p className="mb-4 font-semibold">Keterangan : {modalEvent.extendedProps.description || "Tidak ada deskripsi"}</p>
+              <p className="font-semibold">Keterangan : {modalEvent.extendedProps.description || "Tidak ada deskripsi"}</p>
+              <p className="mb-4 font-semibold">kelas : {modalEvent.extendedProps.kelas.name || "Tidak ada deskripsi"}</p>
               <p className='font-semibold'>Start :
                 {new Date(modalEvent.start).toLocaleDateString("id-ID", {
                   day: "2-digit",
@@ -100,6 +92,7 @@ function renderEventContent(eventInfo) {
   return (
     <div className='p-2'>
       <b>{title}</b><br />
+      <span>kelas : {extendedProps.kelas.name}</span>
       {/* <span>{eventInfo.event.extendedProps.description}</span> */}
     </div>
   );
