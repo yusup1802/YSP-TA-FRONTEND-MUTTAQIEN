@@ -1,6 +1,6 @@
 import Api from "../utils/Api";
 import { NavLink } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 const MuridByWaliKelas = () => {
   const { isPending, error, data: kelasData } = useQuery({
@@ -18,11 +18,41 @@ const MuridByWaliKelas = () => {
     muridProfile = [],
   } = kelasData ?? {};
 
+  const downloadAbsensi = useMutation({
+    mutationFn: async () => {
+      const response = await Api.get("/absensi/download", {
+        responseType: "blob",
+      });
+
+      return {
+        blob: new Blob([response.data], {
+          type: response.headers["content-type"],
+        }),
+        filename: response.headers["content-disposition"]
+          ?.split("filename=")[1]
+          ?.replace(/"/g, "") || "laporan_absensi.xlsx",
+      };
+    },
+    onSuccess: ({ blob, filename }) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    },
+    onError: (error) => {
+      console.error("Error download:", error.message);
+    },
+  });
+
   return (
     <>
       {isPending ? (
         <div className="w-full flex items-center justify-center min-h-screen">
-          <span className="loading loading-spinner loading-xl"/>
+          <span className="loading loading-spinner loading-xl" />
         </div>
       ) : error ? (
         error?.response?.status === 400 ? (
@@ -45,13 +75,14 @@ const MuridByWaliKelas = () => {
               <h2 className="text-2xl text-center">Daftar Murid Kelas - {namaKelas}</h2>
               <div className="flex justify-around w-full">
                 <p className="text-xl text-center">Wali Kelas: {waliKelas.name || "Tidak diketahui"}</p>
-                <p className="text-xl text-center">Nomor Guru: {waliKelas?.noGuru || "Tidak diketahui"}</p>
+                <button className="btn btn-primary" onClick={() => downloadAbsensi.mutate()} disabled={downloadAbsensi.isPending}>
+                  {downloadAbsensi.isPending ? "Downloading..." : "Download Absensi"}
+                </button>
               </div>
 
             </div>
 
             {!muridProfile ? (
-              // kalau muridProfile undefined/null (misalnya kelas tidak ditemukan / error handling tambahan)
               <div className="w-full grow items-center flex justify-center textarea-info">
                 <p>Kelas tidak ditemukan atau data murid kosong.</p>
               </div>
