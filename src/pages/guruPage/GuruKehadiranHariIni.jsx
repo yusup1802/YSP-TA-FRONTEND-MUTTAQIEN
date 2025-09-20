@@ -1,5 +1,5 @@
 import React from 'react'
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import Api from '../../utils/Api';
 import { useForm } from 'react-hook-form';
 
@@ -8,10 +8,32 @@ const GuruKehadiranHariIni = () => {
     queryKey: ['kehadiranGuruHariIni'],
     queryFn: async () => {
       const response = await Api.get('/absensi/today');
-      console.log('POST /tugas/guru :', response);
       return response.data.payload
     }
   })
+  const { isPending: RfidReaderPending, error: RfidReaderError, data: RfidReader } = useQuery({
+    queryKey: ['RFIDReaderStatus'],
+    queryFn: async () => {
+      const response = await Api.get('/rfid-reader');
+      return response.data
+    }
+  })
+
+  const updateRfidStatus = async (newValue) => {
+    const res = await Api.put(`/rfid-reader`, {
+      status: newValue,
+    });
+    return Number(res.data);
+  };
+
+  // React Query Mutation
+  const mutation = useMutation({
+    mutationFn: updateRfidStatus,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["RFIDReaderStatus"]);
+    },
+  });
+
   const {
     register,
     handleSubmit,
@@ -39,6 +61,7 @@ const GuruKehadiranHariIni = () => {
                   <th className='text-center'>Name</th>
                   <th className='text-center'>RFID</th>
                   <th className='text-center'>Kehadiran</th>
+                  <th className='text-center'>RFID Reader Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -48,12 +71,19 @@ const GuruKehadiranHariIni = () => {
                     <td className='text-center'>{murid.rfid?.rfidNumb}</td>
                   </tr>
                 ))} */}
-                  <tr>
-                    <td className='text-center'>nama guru</td>
-                    <td className='text-center'>rfid</td>
-                    <td className='text-center'>status kehadiran</td>
-                  </tr>
-
+                <tr>
+                  <td className='text-center'>nama guru</td>
+                  <td className='text-center'>rfid</td>
+                  <td className='text-center'>status kehadiran</td>
+                  <td className='text-center'>
+                    <input type="checkbox" defaultChecked={RfidReader === 1}
+                      onChange={() => {
+                        const newValue = RfidReader === 1 ? 0 : 1;
+                        mutation.mutate(newValue);
+                      }}
+                      className="toggle toggle-primary" />
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -81,9 +111,8 @@ const GuruKehadiranHariIni = () => {
                     <td className='text-center'>{murid.rfid?.rfidNumb}</td>
                     <td className='text-center gap-2 flex justify-center'>
                       {/* Open the modal using document.getElementById('ID').showModal() method */}
-                      <button className="btn btn-primary" onClick={() => document.getElementById('my_modal_1').showModal()}>Beri keterangan</button>
-                      <button className='btn btn-error'>hapus</button>
-                      <dialog id="my_modal_1" className="modal">
+                      <button className="btn btn-primary" onClick={() => document.getElementById('my_modal_2').showModal()}>Beri keterangan</button>
+                      <dialog id="my_modal_2" className="modal">
                         <div className="modal-box">
                           {/* start content modal */}
                           <h3 className="text-xl font-semibold mb-2 text-center" > Beri Keterangan Kehadiran Murid </h3>
@@ -117,15 +146,6 @@ const GuruKehadiranHariIni = () => {
                                   className="radio radio-primary"
                                 />
                                 <span className="ml-2">Hadir</span>
-                              </label>
-                              <label>
-                                <input
-                                  type="radio"
-                                  value="PULANG"
-                                  {...register("keterangan")}
-                                  className="radio radio-success"
-                                />
-                                <span className="ml-2">Pulang</span>
                               </label>
                               <label>
                                 <input
@@ -204,9 +224,9 @@ const GuruKehadiranHariIni = () => {
                     <td className='text-center'>{murid.jamHadir}</td>
                     <td className='text-center gap-2 flex justify-center'>
                       {/* Open the modal using document.getElementById('ID').showModal() method */}
-                      <button className="btn btn-primary" onClick={() => document.getElementById('my_modal_1').showModal()}>Beri Keterangan</button>
+                      <button className="btn btn-primary" onClick={() => document.getElementById('my_modal_3').showModal()}>Beri Keterangan</button>
                       <button className='btn btn-error'>hapus</button>
-                      <dialog id="my_modal_1" className="modal">
+                      <dialog id="my_modal_3" className="modal">
                         <div className="modal-box">
                           {/* start content modal */}
                           <h3 className="text-xl font-semibold mb-2 text-center">Beri Keterangan Kehadiran Murid</h3>
@@ -235,15 +255,6 @@ const GuruKehadiranHariIni = () => {
                               <label>
                                 <input
                                   type="radio"
-                                  value="HADIR"
-                                  {...register("keterangan")}
-                                  className="radio radio-primary"
-                                />
-                                <span className="ml-2">Hadir</span>
-                              </label>
-                              <label>
-                                <input
-                                  type="radio"
                                   value="PULANG"
                                   {...register("keterangan")}
                                   className="radio radio-success"
@@ -254,7 +265,7 @@ const GuruKehadiranHariIni = () => {
                                 <input
                                   type="radio"
                                   value="IZIN"
-                                  {...register("keterangan", { required: true })}
+                                  {...register("keterangan")}
                                   className="radio radio-warning"
                                 />
                                 <span className="ml-2">Izin</span>
